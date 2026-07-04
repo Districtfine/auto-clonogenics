@@ -219,3 +219,6 @@ __marimo__/
 
 # Model weights
 *.pt
+
+# image outputs
+batch_output/
