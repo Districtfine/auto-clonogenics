@@ -116,7 +116,8 @@ app GUI. These are the known trade-offs vs the full local app in the parent spec
   confirm they carry across the rest.
 
 **CV (the de-risk):**
-- Draw ROI hints once (deliberately looser than the true plates) on the first image of the series.
+- Draw ROI hints once **on the true plates** (as accurately as the user would) on the first
+  image of the series; the code pads them by the configurable margin to absorb shift.
 - ROI-scoped detection lands correct plate boxes + wells on **every** image, visibly robust to
   shift, verified by the per-image grid overlay (lime box + red wells + labels).
 - No regression vs the gold `grid.png` on the images the current pipeline already handled.
