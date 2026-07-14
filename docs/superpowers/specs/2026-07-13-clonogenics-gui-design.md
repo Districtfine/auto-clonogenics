@@ -24,7 +24,7 @@ from multi-well plate `.tif` scans, reproducing the current notebook workflow th
 | Area | Decision | Why |
 |---|---|---|
 | Compute | Fully local, per-machine | No budget/server; data stays in lab |
-| GUI tech | Local web app: **FastAPI backend + React (Vite/TS) frontend** | Author knows this stack; canvas drawing needs HTML `<canvas>` |
+| GUI tech | Local web app: **FastAPI backend + React (Vite/TS) frontend**, **shadcn/ui** (Radix + Tailwind) for components | Author knows this stack; canvas drawing needs HTML `<canvas>`; shadcn = copy-in components, no runtime lock-in |
 | Packaging | **PyApp** binary (per-OS) | Real double-click binary, NOT a shell script; torch downloaded at runtime by uv, NO PyInstaller bundling hell; auto-picks correct torch wheel (CUDA/MPS/CPU) per machine |
 | Desktop shell | **Deferred to phase-2 (Tauri)** | Ship the GUI first; Tauri layers on later with the PyApp binary as its sidecar — nothing wasted |
 | Folder pick | **tkinter native dialog** (`askdirectory`) | ~10 lines, returns a real path (no uploading 100MB TIFFs); tk ships in python-build-standalone; swap for Tauri dialog in phase-2 |
@@ -80,8 +80,8 @@ auto-clonogenics/
 │   │   ├── logging.py         # global exception capture → log file
 │   │   └── api.py             # HTTP routes
 │   └── pyproject.toml
-├── frontend/                  # React + Vite + TS
-│   └── src/…
+├── frontend/                  # React + Vite + TS + Tailwind + shadcn/ui
+│   └── src/…                  # components/ui (shadcn), screens, canvas
 ├── FastSAM-s.pt               # model weight, shipped in the wheel
 └── packaging/                 # PyApp build config + GitHub Actions matrix (mac + win)
 ```
