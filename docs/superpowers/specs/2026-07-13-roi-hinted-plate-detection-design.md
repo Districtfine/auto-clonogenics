@@ -1,17 +1,23 @@
-# ROI-Hinted Plate Detection — Notebook Prototype Spec
+# ROI-Hinted Plate Detection + Colab v0 — Notebook Spec
 
 **Date:** 2026-07-13
 **Status:** Approved design, pre-implementation
-**Scope:** Notebook prototype only. De-risks the core CV change before any app work.
-**Parent:** `2026-07-13-clonogenics-gui-design.md` (the GUI plan, pinned until this lands).
+**Scope:** Polish `clonogenics.ipynb` into a usable notebook (ROI-hinted detection + bbox
+drawing), then **deploy to Google Colab** as the bare-minimum v0 the lab can actually use.
+**Parent:** `2026-07-13-clonogenics-gui-design.md` (the full GUI plan, pinned — v1 later).
 
 ## Why this exists
 
-The GUI design hinges on one unproven CV idea: replacing the current brittle plate-cropping
-(`x_limit_frac` global cutoff + whole-image `detect_plate_rects` contour guessing) with
-**ROI-hinted scoped detection**. Rather than build a whole app around an unproven mechanism,
-prove it in `clonogenics.ipynb` on real scans first. If it doesn't generalize across a folder
-with real hand-placement shift, better to learn that in a notebook cell.
+Two goals, one artifact — **"get the notebook well → deploy to Colab":**
+
+1. **De-risk the core CV change.** The GUI design hinges on one unproven idea: replacing the
+   brittle plate-cropping (`x_limit_frac` global cutoff + whole-image `detect_plate_rects`
+   contour guessing) with **ROI-hinted scoped detection**. Prove it in the notebook on real
+   scans before building an app around it.
+2. **Ship a usable v0 now.** A polished notebook + bbox flow, run on **Colab (free GPU)** with
+   the lab's **TIFFs on Google Drive**, is the absolute-minimum-effort way to make this usable
+   for non-technical users — no packaging, no PyApp, no Tauri. The full app (parent spec) is
+   the eventual upgrade; this gets them something working far sooner.
 
 ## The idea
 
@@ -75,13 +81,42 @@ widget.bboxes  # → [{'x','y','width','height','label'}, ...]
   `profile['roi_hints']`.
 - Dep: `anywidget` / `ipywidgets` (light). Added to `pyproject.toml`.
 
+## Delivery: Colab v0 (the "deploy" half)
+
+Once the notebook runs well locally, deploy it as a Colab notebook the lab opens and runs.
+Bare minimum — do not gold-plate:
+
+- **GPU runtime** — notebook documents "Runtime → Change runtime type → GPU" (free T4).
+- **Deps cell** — `pip install` torch / cellpose / ultralytics / jupyter-bbox-widget at the
+  top (Colab re-runs this each session; ~minutes, unavoidable on ephemeral runtimes).
+- **Google Drive for data** — `from google.colab import drive; drive.mount(...)`. Users drop
+  their TIFF folder in Drive; the notebook points at that folder. Outputs (CSV + triptychs +
+  zip) written **back to Drive** so nothing is lost when the runtime resets.
+- **bbox ROI flow** — the `jupyter-bbox-widget` cell works in Colab; draw ROIs on the first
+  scan, run the folder.
+- **Detection knobs** — Cellpose params stay in a clearly-marked config cell they edit
+  (FIJI-comfortable users are fine with this; the polished tune-loop UI is the parent app,
+  not v0).
+- **Simplicity for non-technical users** — hide code where practical, lead with a short
+  "how to use" markdown cell (set GPU → mount Drive → point at folder → draw boxes → Run all
+  → find results in Drive).
+
+**Accepted v0 costs** (documented, not solved): Google account required; data lives on Google
+Drive (leaves the lab); deps reinstall + no persistent env each session; notebook UX, not the
+app GUI. These are the known trade-offs vs the full local app in the parent spec.
+
 ## Success criteria
 
-On **one real folder of scans with visible plate shift between images** (from `../Clonogenics`):
+**CV (the de-risk):** on **one real folder of scans with visible plate shift** (from
+`../Clonogenics`):
 - Draw ROI hints once (deliberately looser than the true plates) on the first image.
 - ROI-scoped detection lands correct plate boxes + wells on **every** image in the folder,
   visibly robust to shift, verified by the per-image grid overlay (lime box + red wells + labels).
 - No regression vs the current output on the images it already handled.
+
+**Delivery (the v0):**
+- The notebook runs end-to-end on Colab against a Drive folder, from mount → bbox → results
+  back in Drive, driven by the how-to cell alone — no code editing beyond the marked config cell.
 
 ## Scope
 
@@ -92,15 +127,20 @@ On **one real folder of scans with visible plate shift between images** (from `.
   `detect_plate_rects` + `x_limit_frac`.
 - rows×cols → even-spaced fraction generation.
 - Validation cell: run across a whole folder, render grid overlays.
+- **Colab deployment:** deps cell, Drive mount, output-to-Drive, GPU + how-to markdown cells,
+  clearly-marked config cell.
 
 **Out:**
-- Segmentation / Cellpose changes.
-- App / API / frontend / the real GUI rect-drawing.
+- Segmentation / Cellpose algorithm changes (v0 reuses the existing `count_colonies` as-is).
+- App / API / frontend / the real GUI rect-drawing / the polished tune-loop UI.
 - Removing the old `detect_plate_rects` (keep as a fallback path for now).
 - Approach B edge-snap (only if A proves insufficient).
 - Tests (the parent project defers a suite; revisit later).
+- Solving the accepted v0 costs (Google account, data-on-Drive, per-session reinstall) — the
+  full local app in the parent spec is where those go away.
 
 ## After this lands
 
-Reconcile the parent GUI spec's `detect.py` section with whatever the prototype actually
-proved, then unpin the GUI plan.
+- Ship the Colab notebook to the lab as v0.
+- Reconcile the parent GUI spec's `detect.py` section with whatever the prototype actually
+  proved, then unpin the GUI plan for the full local app.
