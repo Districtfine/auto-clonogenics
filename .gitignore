@@ -221,4 +221,9 @@ __marimo__/
 *.pt
 
 # image outputs
-batch_output/
+batch_results/
+batch_output*/
+
+.DS_Store
+*.csv
+*.zip
