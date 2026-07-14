@@ -32,24 +32,40 @@ This replaces:
 - the whole-image, multi-plate 3-tier fallback with area/aspect/rectangularity filters relative
   to the full image.
 
-## Mechanism (approach A — scoped contour detection)
+## Mechanism — race two approaches, keep the winner
 
-Per image, per ROI hint:
+This is a de-risk prototype, so **don't pick on theory** — build both A and B, run the shift
+series through each, compare overlays against the gold `grid.png`, keep whichever wins.
 
+Common to both, per image, per ROI hint:
 1. **Pad the ROI** by a configurable margin (fraction of ROI size) to absorb hand-placement
-   shift — the true plate may poke slightly outside where the user drew.
-2. **Scoped detection** — reuse the existing CLAHE → Canny → morphological-close → contour
-   machinery, but **masked/cropped to the padded ROI**, expecting **exactly one** plate: pick
-   the dominant boxy contour (largest area passing simple rectangularity/aspect sanity checks,
-   relative to the ROI not the whole image). Return the precise `(x, y, w, h)` in full-image
-   coords.
-   - If no usable contour is found in the ROI, fall back to the padded ROI box itself (so the
-     pipeline always yields something, and `refine_well` still corrects per-well).
+   shift — the user draws on the true plate; the plate may shift by up to the margin in later
+   scans.
+2. Detect the precise plate box within the padded ROI (A or B, below); return `(x, y, w, h)`
+   in full-image coords.
 3. **Place wells** by rows×cols even-spaced fractions inside the detected box, then
    `refine_well` (unchanged) Hough-snaps each circle to its real ring.
 
-**Approach B (edge-snap to the ROI's four sides)** is a documented fallback if a dataset fights
-approach A. Not built in this prototype unless A proves insufficient.
+### Approach A — scoped contour detection
+Reuse the existing CLAHE → Canny → morph-close → contour machinery, masked/cropped to the
+padded ROI, expecting **exactly one** plate: pick the dominant boxy contour (largest area
+passing simple rectangularity/aspect checks, relative to the ROI). Reuses working code; but
+inherits the faint-border / interior-clutter brittleness of the current whole-image detector.
+
+### Approach B — edge-snap to the four sides (favored prior)
+Exploits the accurate-draw prior: the true plate edges sit in narrow bands near each ROI side.
+- Left/right edge: sum `|gx|` (vertical-edge strength) per column within the left/right search
+  band → peak column = that edge. Top/bottom: sum `|gy|` per row in the top/bottom bands.
+- Box = the 4 snapped edges.
+- **Graceful degradation:** if a side has no strong edge peak, keep the drawn edge (already a
+  good estimate since the user drew accurately) — A cannot do this.
+- Directional aggregation amplifies a faint-but-consistent border over random interior specks,
+  so it should tolerate faint transparent plate frames + colony/handwriting clutter better than
+  contour-finding. Assumes near-axis-aligned plates (true for these scans).
+
+### Shared fallback
+If the chosen approach finds no usable box in an ROI, fall back to the padded ROI box itself,
+so the pipeline always yields something and `refine_well` still corrects per-well.
 
 ### Two cleanly separated shift-correction layers (keep both)
 
@@ -130,7 +146,9 @@ app GUI. These are the known trade-offs vs the full local app in the parent spec
 
 **In:**
 - `jupyter-bbox-widget` ROI capture cell → `roi_hints` (fractions) in the Config `profile`.
-- `detect_plate_rect_in_roi(img_rgb, roi, profile)` — approach A.
+- **Both** detectors: `detect_plate_rect_in_roi_contour` (A) and `detect_plate_rect_in_roi_edges`
+  (B), behind a switch, plus a comparison cell that renders A vs B overlays side by side against
+  the gold `grid.png` on the shift series → pick the winner.
 - Rewire `detect_wells` to loop over `roi_hints` (scoped detection) instead of
   `detect_plate_rects` + `x_limit_frac`.
 - rows×cols → even-spaced fraction generation.
@@ -142,7 +160,7 @@ app GUI. These are the known trade-offs vs the full local app in the parent spec
 - Segmentation / Cellpose algorithm changes (v0 reuses the existing `count_colonies` as-is).
 - App / API / frontend / the real GUI rect-drawing / the polished tune-loop UI.
 - Removing the old `detect_plate_rects` (keep as a fallback path for now).
-- Approach B edge-snap (only if A proves insufficient).
+- Keeping *both* A and B long-term — the loser is dropped once the race is decided.
 - Tests (the parent project defers a suite; revisit later).
 - Solving the accepted v0 costs (Google account, data-on-Drive, per-session reinstall) — the
   full local app in the parent spec is where those go away.

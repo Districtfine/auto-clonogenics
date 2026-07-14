@@ -12,18 +12,16 @@ dependencies = [
     "dinov3 @ git+https://github.com/facebookresearch/dinov3.git",
     "mobile-sam @ git+https://github.com/ChaoningZhang/MobileSAM.git",
     "timm",
-    
     # Image Processing & Math
     "opencv-python>=4.9.0",
     "tifffile>=2024.1.30",
     "numpy>=1.26.0",
-    
     # Data Export & Notebooks
     "pandas>=2.2.0",
     "jupyter>=1.0.0",
-    
     # Under-the-hood fixes
-    "packaging"
+    "packaging",
+    "jupyter-bbox-widget>=0.7.0",
 ]
 
 [tool.uv]
