@@ -107,10 +107,14 @@ Config cell with API calls:
 | `BATCH_MODE=False` (single file, plots on) | Tune screen — detection section |
 | `BATCH_MODE=True` (sweep folder) | Run screen |
 
-- `detect.py` ← `refine_well` + well-grid generation. **Change:** plate geometry comes
-  from **user-drawn rectangles + grid dims (rows×cols)**, not the hand-tuned `profile`.
-  `detect_plate_rects` auto-detect is kept as an optional "auto-place rects" seed button.
-  `refine_well` (Hough snap to the real rim) is kept as-is.
+- `detect.py` ← `refine_well` + well-grid generation. **Change:** plate geometry comes from
+  **ROI-hinted scoped detection** — the drawn rect is a per-plate region-of-interest that
+  guides per-image auto-detection, replacing the brittle global `x_limit_frac` crop.
+  `refine_well` (Hough snap to the real rim) kept as-is.
+
+  > **Note:** the ROI-hinted detection mechanism is being prototyped and de-risked in the
+  > notebook first, under its own spec (`2026-07-13-roi-hinted-plate-detection-design.md`).
+  > This section will be reconciled with that prototype's outcome before app work begins.
 - `segment.py` ← LAB-distance signal + `count_colonies`. Returns count **and avg diameter**
   per well (measured from the Cellpose masks already produced).
 - `models.py` ← load FastSAM + Cellpose once.
