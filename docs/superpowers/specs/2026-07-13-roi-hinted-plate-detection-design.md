@@ -107,12 +107,19 @@ app GUI. These are the known trade-offs vs the full local app in the parent spec
 
 ## Success criteria
 
-**CV (the de-risk):** on **one real folder of scans with visible plate shift** (from
-`../Clonogenics`):
-- Draw ROI hints once (deliberately looser than the true plates) on the first image.
-- ROI-scoped detection lands correct plate boxes + wells on **every** image in the folder,
-  visibly robust to shift, verified by the per-image grid overlay (lime box + red wells + labels).
-- No regression vs the current output on the images it already handled.
+**Validation data:**
+- **Input scans:** `../Clonogenics-orig/*.tif` (~20 real ~100MB TIFFs across several experiments).
+- **Gold reference:** `./batch_output_20260704_163617/<plate>/grid.png` — overlays from a full
+  prior pipeline run, to compare new ROI-detection overlays against.
+- **Primary shift test:** the within-experiment series `4h HS 43 + radiation` 001/002/004/005/006
+  — same plate layout, real hand-placement shift between scans. Draw ROI hints once on 001,
+  confirm they carry across the rest.
+
+**CV (the de-risk):**
+- Draw ROI hints once (deliberately looser than the true plates) on the first image of the series.
+- ROI-scoped detection lands correct plate boxes + wells on **every** image, visibly robust to
+  shift, verified by the per-image grid overlay (lime box + red wells + labels).
+- No regression vs the gold `grid.png` on the images the current pipeline already handled.
 
 **Delivery (the v0):**
 - The notebook runs end-to-end on Colab against a Drive folder, from mount → bbox → results
