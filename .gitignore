@@ -227,3 +227,7 @@ batch_output*/
 .DS_Store
 *.csv
 *.zip
+
+# ROI preview written by the bbox cell on every run.
+# (batch_output*/, *.csv and *.zip are already ignored above.)
+roi_preview.png
