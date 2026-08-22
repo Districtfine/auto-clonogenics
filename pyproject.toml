@@ -22,6 +22,7 @@ dependencies = [
     # Under-the-hood fixes
     "packaging",
     "jupyter-bbox-widget>=0.7.0",
+    "wellcrop>=0.1.0",
 ]
 
 [tool.uv]
