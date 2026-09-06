@@ -402,6 +402,11 @@ dependencies = [
     { name = "wellcrop" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "jupyter" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "cellpose", specifier = ">=4.2.1.1" },
@@ -420,7 +425,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = []
+dev = [{ name = "jupyter", specifier = ">=1.1.1" }]
 
 [[package]]
 name = "executing"
