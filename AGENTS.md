@@ -10,18 +10,19 @@ plates, each a grid of wells (commonly 3×2). The pipeline turns each scan into 
 counts.
 
 The source scans live **outside** this repo, in the sibling directory `../Clonogenics` (some
-docs reference `../Clonogenics-orig`). This repo contains code, model weights, and output
-artifacts — not the input data.
+docs reference `../Clonogenics-orig`). This repo contains code and output artifacts — not the
+input data.
 
 ## Current state (notebook reality)
 
 The **active development surface is `clonogenics.ipynb`** — a Jupyter notebook that runs both
-locally and on Google Colab. It is the *current* pipeline. Older standalone scripts
-(`crop.py`, `ai_crop.py`) are legacy; the notebook has moved past them.
+locally and on Google Colab. It is the *current* pipeline (and the only one). It uses
+**`wellcrop`** (with ROI hints) for well detection and **Cellpose** (`cpsam_v2`) for colony
+segmentation.
 
-> Note: the existing `CLAUDE.md` was replaced by this file. It described the notebook as
-> `Untitled.ipynb` and well-detection as FastSAM-based — both are stale. The notebook now uses
-> **`wellcrop`** (with ROI hints) for well detection, not FastSAM.
+The earlier FastSAM-era scripts and model weights (`crop.py`, `ai_crop.py`,
+`debug_plate_edges.py`, `abody_detection.ipynb`, `FastSAM-s.pt`, `mobile_sam.pt`) have been
+removed — the notebook superseded them.
 
 ## Pipeline
 
@@ -115,17 +116,13 @@ box is trivial. It will eventually run on a GTX 1650 Ti (4GB VRAM), so:
 
 ## Dependencies
 
-`cellpose`, `torch`, `ultralytics` (FastSAM), `mobile-sam`, `dinov3`, `wellcrop`, `opencv-python`,
-`tifffile`, `numpy`, `pandas`, `jupyter`, `jupyter-bbox-widget`. Managed in `pyproject.toml` +
-`uv.lock`.
+`cellpose` (provides the `cpsam_v2` SAM backbone via `segment-anything`), `torch`, `wellcrop`,
+`opencv-python`, `tifffile`, `numpy`, `scipy`, `matplotlib`, `pandas`, `tqdm`, `jupyter`,
+`jupyter-bbox-widget`. Managed in `pyproject.toml` + `uv.lock`.
 
 ## Repo layout (key files)
 
 - `clonogenics.ipynb` — **the pipeline** (primary surface; Colab + local).
-- `crop.py` — legacy dumb crop (left-60% slice). Superseded.
-- `ai_crop.py` — legacy FastSAM-based well crop (`FastSAM-s.pt`). Superseded by `wellcrop`.
-- `debug_plate_edges.py` — ad-hoc diagnostic (analytic circles vs Hough-refined circles).
-- `FastSAM-s.pt`, `mobile_sam.pt` — model weights (gitignored via `*.pt`).
 - `docs/superpowers/` — design specs + plans. The long-term direction is a local desktop app
   (FastAPI + React, packaged with PyApp) — the notebook is the de-risking prototype. These docs
   are partly historical/superseded by the current `wellcrop` approach.
