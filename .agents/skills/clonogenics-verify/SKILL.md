@@ -53,11 +53,16 @@ Scan + hints below are the known-good benchmark (user-drawn ROI hints, stable fo
 ```python
 SCAN = '/Users/arseniborisovs/Coding/Clonogenics/4h HS + 24h Chemo001.tif'
 ROI_HINTS = [
-    {'x': 0.11926605504587157, 'y': 0.09916666666666667, 'w': 0.39908256880733944,
-     'h': 0.42333333333333334, 'rows': 3, 'cols': 2, 'letter': 'A'},
-    {'x': 0.13302752293577982, 'y': 0.5475, 'w': 0.3944954128440367,
-     'h': 0.4266666666666667, 'rows': 3, 'cols': 2, 'letter': 'B'},
+    {'x': 0.1628440366972477, 'y': 0.07416666666666667, 'w': 0.39908256880733944,
+     'h': 0.4241666666666667, 'rows': 3, 'cols': 2, 'letter': 'A'},
+    {'x': 0.17889908256880735, 'y': 0.5183333333333333, 'w': 0.39908256880733944,
+     'h': 0.4275, 'rows': 3, 'cols': 2, 'letter': 'B'},
 ]
+# Second benchmark: 4T1 rim-glint dataset (3x1 plate hint, rim arcs in every well)
+SCAN_4T1 = '/Users/arseniborisovs/Downloads/4T1 TVI 8 day + 13 day clonogenics027.tif'
+HINT_4T1 = {'x': 0.125, 'y': 0.02666666666666667, 'w': 0.42545871559633025,
+            'h': 0.9541666666666667, 'rows': 3, 'cols': 1, 'letter': 'A'}
+# veto-design references: A1=2, A2=7, A3=4 (old dilate+inpaint: A1=8, A2=9, A3=31)
 ```
 
 ```python
@@ -75,9 +80,25 @@ for w in wells:
 ```
 
 Expect 12 wells (2 plates x 3x2). Reference per-well counts with default tuning
-(cpsam_v2, mps): A2=116, A4=82, A6=106, B2=107, B4=103, B6=93; edge wells
-A1=12, A5=10, B1=11, B5=7. Verify on a colony-dense well (A2); edge wells with
-few colonies are the ones most prone to junk counts on tray plastic.
+(cpsam_v2, mps, cellprob-veto outlier handling): A1=12, A2=115, A3=12, A4=87,
+A5=10, A6=129, B1=16, B2=102, B3=12, B4=104, B5=9, B6=90. Verify on a
+colony-dense well (A2); edge wells with few colonies are the ones most prone to
+junk counts on tray plastic.
+
+IMPORTANT -- mps counts are NOT reproducible across kernel sessions: identical
+code, weights and inputs gave A3-plain 5 colonies in one session and 171 in
+another; dense wells jitter by +-1. Within one session everything is bit-stable
+(repeats and fresh model instances identical). So: compare old-vs-new code only
+inside the same process, and treat cross-session count differences <~2 on dense
+wells as jitter, not regressions.
+
+Regression checks (run all in one session):
+- B3 contains a distinct dark debris blob: it must stay UNMASKED (dark_mask flags
+  it; the veto forbids masks there).
+- 4T1 scan (hint below) A3 has a long rim glint arc: it must count ~4 with ZERO
+  masks on the flagged arc. History: zeroing gave 7 rim fakes, dilate+inpaint gave
+  26, the veto gives 0 (paint ladder replaced by one rule: flagged pixels can
+  never seed or anchor a mask).
 
 ```python
 from cellpose import models
