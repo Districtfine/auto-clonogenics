@@ -421,7 +421,7 @@ requires-dist = [
     { name = "tifffile", specifier = ">=2024.1.30" },
     { name = "torch", specifier = ">=2.1.2" },
     { name = "tqdm" },
-    { name = "wellcrop", specifier = ">=0.1.0" },
+    { name = "wellcrop", specifier = ">=0.2.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -2109,16 +2109,16 @@ wheels = [
 
 [[package]]
 name = "wellcrop"
-version = "0.1.0"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
     { name = "opencv-python" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f6/c8/bc478d33d2f7ae002972af552ccfa780af0f73b23984236c040afad58c56/wellcrop-0.1.0.tar.gz", hash = "sha256:9dd467035d17ed62c71505755f7d1bcf9690f478a7b01a8319a8a07bc916273b", size = 157126, upload-time = "2026-08-22T06:02:55.718Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/99/2c/dcf5d9028f013a5755779aff36ee1b9d095101adcb0fbbd054168a2c43dd/wellcrop-0.2.0.tar.gz", hash = "sha256:3f0f2e687e19888a237a757c1bbc9d265fd65a2703ae727156d3281db2f717ab", size = 163391, upload-time = "2026-09-09T05:09:59.796Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1e/a0/4106404377b4c9548ce4928aefc1f245fbc2a1a2a4e4f3df930d8387c9d2/wellcrop-0.1.0-py3-none-any.whl", hash = "sha256:bc406d167d8ff233dc16a7ef898c5d0831d622c9b8a1198a3ce4ff8590e17a43", size = 18345, upload-time = "2026-08-22T06:02:54.401Z" },
+    { url = "https://files.pythonhosted.org/packages/6f/8a/fb7f7aca4a36c2a2f981e9ad02d6416ef653f01acc3f7e767b30ac2301fc/wellcrop-0.2.0-py3-none-any.whl", hash = "sha256:f4c4916006cd4f8e7fbc594aedfdb8b81cb84940c8861c127698826f1ccfeaca", size = 19414, upload-time = "2026-09-09T05:09:58.457Z" },
 ]
 
 [[package]]

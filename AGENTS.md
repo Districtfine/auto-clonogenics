@@ -36,6 +36,11 @@ Two stages, both orchestrated inside `clonogenics.ipynb`:
   (scoped to each hint), places an even rows×cols grid of wells inside it, and Hough-snaps each
   circle to the real rim (`refine_well`). It returns `wells` (each with `.label`, `.x`, `.y`,
   `.radius`, `.mask`, `.image`) and `plate_boxes`.
+- Well labels are numbered by wellcrop's `label_scheme`, set by `WELL_LABEL_SCHEME` in the
+  Config cell. This repo uses `"column-major"` — the lab's convention: on a 3×2 plate the
+  left column is A1–A3 (top to bottom), the right one A4–A6. `"row-major"` is wellcrop's
+  historical default; wells are returned in ascending label order either way, and each
+  `Well` also carries canonical `.row`/`.col` grid indices.
 - `well.extract_crop(img_rgb)` produces a **circular-masked RGB crop** per well (corners outside
   the rim are blacked out so Cellpose only sees the circle).
 
@@ -119,6 +124,8 @@ box is trivial. It will eventually run on a GTX 1650 Ti (4GB VRAM), so:
 `cellpose` (provides the `cpsam_v2` SAM backbone via `segment-anything`), `torch`, `wellcrop`,
 `opencv-python`, `tifffile`, `numpy`, `scipy`, `matplotlib`, `pandas`, `tqdm`, `jupyter`,
 `jupyter-bbox-widget`. Managed in `pyproject.toml` + `uv.lock`.
+
+`wellcrop>=0.2.0` ships the `label_scheme` well-numbering API the notebook uses.
 
 ## Repo layout (key files)
 
