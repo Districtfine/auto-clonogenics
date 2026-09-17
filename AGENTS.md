@@ -115,9 +115,6 @@ These are the ones to adjust if results are wrong. **Well/plate detection** is s
 - `CELLPOSE_NITER` (0) — flow-dynamics iterations; 0 = Cellpose's own `200/rescale`, which is
   what keeps the speck pass's ~2.5x upscale from burning the runtime on dynamics. Raise if
   mask boundaries look clipped short of the real colony edge.
-- `CELLPOSE_AUGMENT` (False) — test-time augmentation: 50% tile overlap with checkerboard-flipped
-  tiles flipped back before blending (`tile_overlap` stops applying in this mode). ~2.8x the
-  forward passes, same VRAM per step; only helps tile-seam boundary artifacts.
 
 ### LAB outlier (debris/glint) filtering — pre-Cellpose, not a Cellpose param
 - `L_DARK_MARGIN` (97) — pixels darker than background by more than this are zeroed.
