@@ -46,9 +46,14 @@ Two stages, both orchestrated inside `clonogenics.ipynb`:
 
 ### Stage 2 — Colony segmentation (Cellpose)
 - Builds a color-agnostic **LAB "signal" image**: distance of each pixel from the well-background
-  (background sampled from the rim ring), normalized to 0–255.
-- Zeroes out outlier pixels before segmentation: **debris** (darker than background by
-  `L_DARK_MARGIN`) and **glint** (brighter than background by `L_BRIGHT_MARGIN`).
+  (background = the histogram **mode** of the well's interior core, not the rim ring, which pools
+  stain at the meniscus and inverted the signal on dense wells), normalized to 0–255. Wells whose
+  background fails the scanner-pinned `BG_CHROMA_REF`/`BG_L_MIN` check are failed loudly (count 0
+  + `Error` in the CSV) instead of emitting untrustworthy counts.
+- Flags outlier pixels before segmentation: **debris** (darker than background by `L_DARK_MARGIN`)
+  and **glint** (brighter than background by `L_BRIGHT_MARGIN`). They are inpainted out of the
+  signal — so they cannot skew normalization or the flow field around them — and then **vetoed**
+  in the cellprob/flow maps, so no mask can ever seed or anchor on a debris/glint pixel.
 - Runs `models.CellposeModel(pretrained_model='cpsam_v2', ...)` — mirroring `eval()`'s internals
   (`normalize_img` → `_run_net` → `_compute_masks`) rather than calling `eval()`, so the
   debris/glint **cellprob veto** can be injected between the flow net and the dynamics.
