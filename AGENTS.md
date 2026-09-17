@@ -112,9 +112,12 @@ These are the ones to adjust if results are wrong. **Well/plate detection** is s
 - `CELLPOSE_CELLPROB_THRESHOLD` (-2.0) — lower (more negative) is more permissive.
 - `CELLPOSE_NORM_LOW`/`CELLPOSE_NORM_HIGH` (1.0/99.0) — normalization percentile range.
 - `CELLPOSE_MIN_COLONY_DIAMETER` (15) — pin-prick filter; converts to `CELLPOSE_MIN_SIZE`.
-- `CELLPOSE_NITER` (0) — flow-dynamics iterations; 0 = Cellpose's own `200/rescale`, which is
-  what keeps the speck pass's ~2.5x upscale from burning the runtime on dynamics. Raise if
-  mask boundaries look clipped short of the real colony edge.
+- `CELLPOSE_NITER` (0) — flow-dynamics iterations: the flows drive a dynamical system that moves
+  pixels, and pixels that converge to the same position make up one ROI. 0 = Cellpose's default,
+  scaled with ROI diameter (`200/rescale` here) — calibrated for typical colony-size ROIs, and
+  what keeps the speck pass's ~2.5x upscale from burning runtime on dynamics. Raise for longer
+  ROIs (merged lawns, rim streaks) that need more iterations to converge — Cellpose's docs
+  suggest e.g. 2000.
 
 ### LAB outlier (debris/glint) filtering — pre-Cellpose, not a Cellpose param
 - `L_DARK_MARGIN` (97) — pixels darker than background by more than this are zeroed.
