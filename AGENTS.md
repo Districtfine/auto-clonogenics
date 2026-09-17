@@ -115,16 +115,8 @@ These are the ones to adjust if results are wrong. **Well/plate detection** is s
 - `CELLPOSE_NITER` (0) — flow-dynamics iterations; 0 = Cellpose's own `200/rescale`, which is
   what keeps the speck pass's ~2.5x upscale from burning the runtime on dynamics. Raise if
   mask boundaries look clipped short of the real colony edge.
-- `CELLPOSE_MAX_SIZE_FRACTION` (0.4) — Cellpose **silently** drops any mask larger than this
-  fraction of the well crop, so a dense-well merger can vanish from the count. Raise toward
-  1.0 if dense wells undercount.
 - `CELLPOSE_AUGMENT` (False) — tile-flip test-time augmentation; better boundaries on
   irregular colonies, ~2-4x slower over the whole sweep.
-- `CELLPOSE_BATCH_SIZE` (0) — tiles per forward pass; 0 = auto from device VRAM (see below).
-  Tiles are independent, so this trades VRAM for speed only.
-- `CELLPOSE_PRECISION` (`"auto"`) — model weight dtype. Auto = bf16 where the GPU has bf16
-  tensor cores (compute capability >= 8), float32 on Turing/CPU. Only applies on the next
-  model *load*.
 
 ### LAB outlier (debris/glint) filtering — pre-Cellpose, not a Cellpose param
 - `L_DARK_MARGIN` (97) — pixels darker than background by more than this are zeroed.
@@ -139,15 +131,15 @@ box is trivial. It will eventually run on a GTX 1650 Ti (4GB VRAM), so:
 - Avoid mps-only ops; prefer things that also run under cuda/cpu.
 - Watch VRAM footprint (the model-loading cell skips reloading if already loaded).
 
-Two settings are resolved from the device in the model-load cell (and printed there, so a run's
-log states what it used) rather than hardcoded:
+Two settings are not config fields at all — the model-load cell derives them from whatever card
+the run landed on and prints both, so a run's log states what it used:
 - `use_bfloat16` — Cellpose defaults to bf16 weights, but only Ampere/Ada (compute capability
   >= 8: L4, A100) have bf16 tensor cores. On Turing (Colab T4, the 1650 Ti = 7.5) PyTorch
-  emulates bf16 in software: identical numbers, several times slower. Auto uses bf16 on mps and
-  on capability >= 8, float32 on Turing/CPU. `torch.cuda.is_bf16_supported()` cannot be used to
+  emulates bf16 in software: identical numbers, several times slower. So bf16 on mps and on
+  capability >= 8, float32 on Turing/CPU. `torch.cuda.is_bf16_supported()` cannot be used to
   decide this — it returns `True` on a T4 by design.
 - `batch_size` — stepped by VRAM class (~4GB 1650 Ti → 2, ~15GB T4 → 16, ~24GB L4/A100 → 32;
-  MPS keeps 8). Lower it first when a smaller card OOMs.
+  MPS keeps 8). Tiles are independent, so it trades VRAM for speed and nothing else.
 
 ## Dependencies
 
